@@ -1,0 +1,217 @@
+ <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - Legrand Joyas</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="index.html" class="logo">
+                    <i class="fas fa-gem"></i> Legrand Joyas
+                </a>
+            </div>
+            <div class="nav-center">
+                <input type="text" class="search-input" placeholder="Buscar joyas...">
+            </div>
+            <div class="nav-right">
+                <a href="carrito.html" class="nav-link">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Carrito</span>
+                </a>
+                <div class="user-menu-trigger" id="userMenuTrigger">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Profile Content -->
+    <main class="profile-main">
+        <div class="profile-container">
+            <!-- Sidebar -->
+            <aside class="profile-sidebar">
+                <div class="profile-nav">
+                    <a href="#perfil" class="profile-nav-item active" data-section="perfil">
+                        <i class="fas fa-user"></i>
+                        <span>Mi Perfil</span>
+                    </a>
+                    <a href="#privacidad" class="profile-nav-item" data-section="privacidad">
+                        <i class="fas fa-lock"></i>
+                        <span>Privacidad y Seguridad</span>
+                    </a>
+                    <a href="historial.html" class="profile-nav-item">
+                        <i class="fas fa-history"></i>
+                        <span>Historial de Compras</span>
+                    </a>
+                    <a href="pedidos.html" class="profile-nav-item">
+                        <i class="fas fa-truck"></i>
+                        <span>Pedidos en Tránsito</span>
+                    </a>
+                </div>
+            </aside>
+
+            <!-- Content Area -->
+            <div class="profile-content">
+                <!-- Profile Section -->
+                <section id="perfil" class="profile-section active">
+                    <div class="section-header">
+                        <h2>Mi Perfil</h2>
+                        <button class="btn-edit" id="editProfileBtn">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                    </div>
+
+                    <div class="profile-card">
+                        <div class="profile-header">
+                            <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Perfil" class="profile-image" style="width: 100px; height: 100px; max-width: 100px; border-radius: 50%; object-fit: cover;">
+                            <div class="profile-info">
+                                <h3 id="userName">Cargando...</h3>
+                                <p id="userEmail">usuario@email.com</p>
+                                <span class="member-since">Miembro desde 2024</span>
+                            </div>
+                        </div>
+
+                        <div class="profile-details">
+                            <div class="detail-group">
+                                <label>Teléfono</label>
+                                <p id="userPhone">No especificado</p>
+                            </div>
+                            <div class="detail-group">
+                                <label>Dirección</label>
+                                <p id="userAddress">No especificada</p>
+                            </div>
+                            <div class="detail-group">
+                                <label>Género</label>
+                                <p id="userGender">No especificado</p>
+                            </div>
+                            <div class="detail-group">
+                                <label>Cumpleaños</label>
+                                <p id="userBirthday">No especificado</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Privacy Section -->
+                <section id="privacidad" class="profile-section">
+                    <div class="section-header">
+                        <h2>Privacidad y Seguridad</h2>
+                    </div>
+
+                    <div class="security-card">
+                        <div class="security-item">
+                            <div class="security-info">
+                                <h4>Cambiar Contraseña</h4>
+                                <p>Actualiza tu contraseña regularmente para mantener tu cuenta segura</p>
+                            </div>
+                            <button class="btn-secondary" id="changePasswordBtn">
+                                <i class="fas fa-key"></i> Cambiar
+                            </button>
+                        </div>
+
+                        <div class="security-item">
+                            <div class="security-info">
+                                <h4>Autenticación de Dos Factores</h4>
+                                <p>Añade una capa adicional de seguridad a tu cuenta</p>
+                            </div>
+                            <button class="btn-secondary">
+                                <i class="fas fa-shield-alt"></i> Configurar
+                            </button>
+                        </div>
+
+                        <div class="security-item">
+                            <div class="security-info">
+                                <h4>Dispositivos Activos</h4>
+                                <p>Gestiona los dispositivos conectados a tu cuenta</p>
+                            </div>
+                            <button class="btn-secondary">
+                                <i class="fas fa-mobile-alt"></i> Ver
+                            </button>
+                        </div>
+
+                        <div class="security-item">
+                            <div class="security-info">
+                                <h4>Datos y Privacidad</h4>
+                                <p>Descarga o elimina tus datos personales</p>
+                            </div>
+                            <button class="btn-secondary">
+                                <i class="fas fa-download"></i> Gestionar
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- User Menu Dropdown -->
+    <div class="user-menu-dropdown" id="userMenuDropdown">
+        <div class="dropdown-header">
+            <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Usuario" class="dropdown-avatar" style="width: 40px; height: 40px; max-width: 40px; border-radius: 50%; object-fit: cover;">
+            <div class="dropdown-user-info">
+                <h4 id="dropdownName">Nombre Apellido</h4>
+                <p id="dropdownEmail">usuario@email.com</p>
+            </div>
+        </div>
+        <div class="dropdown-menu">
+            <a href="perfil.html" class="dropdown-item">
+                <i class="fas fa-user"></i> Mi Perfil
+            </a>
+            <a href="historial.html" class="dropdown-item">
+                <i class="fas fa-history"></i> Historial
+            </a>
+            <a href="pedidos.html" class="dropdown-item">
+                <i class="fas fa-truck"></i> Mis Pedidos
+            </a>
+            <a href="perfil.html#privacidad" class="dropdown-item">
+                <i class="fas fa-lock"></i> Seguridad
+            </a>
+            <hr>
+            <a href="#" class="dropdown-item" id="logoutLink">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </a>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div class="modal" id="changePasswordModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Cambiar Contraseña</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="changePasswordForm">
+                    <div class="form-group">
+                        <label>Contraseña Actual</label>
+                        <input type="password" id="currentPassword" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nueva Contraseña</label>
+                        <input type="password" id="newPassword" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirmar Contraseña</label>
+                        <input type="password" id="confirmPassword" class="form-input" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary">Cancelar</button>
+                        <button type="submit" class="btn-primary">Cambiar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/profile.js"></script>
+</body>
+</html>

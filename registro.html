@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Legrand Joyas</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .form-grid input,
+        .form-grid select {
+            grid-column: auto;
+        }
+        .form-grid input[type="email"],
+        .form-grid input[type="password"],
+        .form-grid textarea {
+            grid-column: 1 / -1;
+        }
+        .form-full {
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body style="background: linear-gradient(135deg, #1a120b, #3a2a1f); min-height:100vh; display:grid; place-items:center;">
+    <main style="width:min(600px,90vw); background:#fff; border-radius:28px; padding:3rem; box-shadow:0 30px 80px rgba(0,0,0,0.3);">
+        <div style="text-align:center; margin-bottom:2rem;">
+            <div class="logo">LEGRAND</div>
+            <p style="color:var(--muted); margin-top:1rem;">Crea tu cuenta y accede a beneficios exclusivos.</p>
+        </div>
+        <div class="form-grid">
+            <input id="nombre" type="text" placeholder="Nombre" required>
+            <input id="apellido" type="text" placeholder="Apellido" required>
+            <input id="email" type="email" placeholder="Correo electronico" required class="form-full">
+            <input id="telefono" type="tel" placeholder="Teléfono" required>
+            <input id="genero" type="text" placeholder="Género" required>
+            <input id="cumpleanos" type="date" placeholder="Cumpleaños" required>
+            <textarea id="direccion" placeholder="Dirección completa" required class="form-full" style="padding: 0.75rem 1rem; border-radius: 18px; border: 1px solid var(--border); font-family: inherit;"></textarea>
+            <input id="password" type="password" placeholder="Contraseña" required class="form-full">
+            <input id="confirm-password" type="password" placeholder="Confirmar contraseña" required class="form-full">
+            <button class="btn btn-primary form-full" onclick="registrarUsuario()">Crear cuenta</button>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:1rem; margin: 1.5rem 0;">
+            <div style="flex:1; height:1px; background:var(--border);"></div>
+            <span style="color:var(--muted); font-size:0.85rem;">o</span>
+            <div style="flex:1; height:1px; background:var(--border);"></div>
+        </div>
+
+        <button type="button" onclick="registrarseConGoogle()" style="width:100%; display:flex; align-items:center; justify-content:center; gap:0.75rem; padding:0.85rem 1rem; border-radius:999px; border:1px solid var(--border); background:#fff; cursor:pointer; font-family:inherit; font-size:0.95rem; color:#1a120b;">
+            <svg width="20" height="20" viewBox="0 0 48 48">
+                <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.9 32.7 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"/>
+                <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.6 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+                <path fill="#4CAF50" d="M24 44c5.3 0 10.1-2 13.7-5.4l-6.3-5.3C29.3 34.9 26.8 36 24 36c-5.4 0-9.9-3.3-11.3-8l-6.6 5.1C9.6 39.6 16.2 44 24 44z"/>
+                <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.9 2.5-2.5 4.6-4.6 6.1l6.3 5.3C40.4 36.5 44 30.9 44 24c0-1.2-.1-2.4-.4-3.5z"/>
+            </svg>
+            Registrarme con Google
+        </button>
+
+        <p style="text-align:center; color:var(--muted); margin-top:1.5rem;">Ya tienes cuenta? <a href="login.html" style="color:var(--gold);">Inicia sesion</a></p>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script>
+        async function registrarUsuario() {
+            const nombre = document.getElementById('nombre').value.trim();
+            const apellido = document.getElementById('apellido').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const telefono = document.getElementById('telefono').value.trim();
+            const genero = document.getElementById('genero').value.trim();
+            const cumpleanos = document.getElementById('cumpleanos').value.trim();
+            const direccion = document.getElementById('direccion').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const confirmPassword = document.getElementById('confirm-password').value.trim();
+
+            if (!nombre || !apellido || !email || !telefono || !genero || !cumpleanos || !direccion || !password) {
+                return alert('Completa todos los campos obligatorios.');
+            }
+            if (password !== confirmPassword) {
+                return alert('Las contraseñas no coinciden.');
+            }
+            if (password.length < 6) {
+                return alert('La contraseña debe tener al menos 6 caracteres.');
+            }
+
+            try {
+                const { data, error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: {
+                            full_name: nombre + ' ' + apellido,
+                            phone: telefono,
+                            gender: genero,
+                            birthday: cumpleanos,
+                            address: direccion
+                        }
+                    }
+                });
+
+                if (error) {
+                    return alert('Error al registrar: ' + error.message);
+                }
+
+                if (data.user) {
+                    // La fila en "usuarios" ya la crea el trigger handle_new_user.
+                    // Solo completamos/actualizamos los datos del formulario.
+                    const { error: insertError } = await supabase.from('usuarios').upsert([{
+                        id: data.user.id,
+                        email,
+                        full_name: nombre + ' ' + apellido,
+                        phone: telefono,
+                        gender: genero,
+                        birthday: cumpleanos,
+                        address: direccion
+                    }], { onConflict: 'id' });
+
+                    if (insertError) {
+                        console.warn('Aviso al crear perfil:', insertError.message);
+                    }
+
+                    alert('Registro exitoso. Te enviamos un correo de verificación. Revisa tu bandeja y luego inicia sesión.');
+                    window.location.href = 'login.html';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al registrar. Intenta nuevamente.');
+            }
+        }
+
+        async function registrarseConGoogle() {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.origin + '/index.html'
+                }
+            });
+            if (error) {
+                alert('Error al registrarse con Google: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

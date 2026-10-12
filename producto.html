@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detalle de Joya — Legrand Joyas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #faf9f7;
+      color: #1a1a1a;
+      margin: 0;
+    }
+
+    /* ── Breadcrumb ── */
+    .breadcrumb {
+      padding: 14px 40px;
+      font-size: 12px;
+      color: #888;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid #ece9e3;
+      background: #fff;
+    }
+    .breadcrumb a { color: #888; text-decoration: none; }
+    .breadcrumb a:hover { color: #b8902e; }
+    .breadcrumb span { margin: 0 6px; }
+
+    /* ── Layout ── */
+    .product-page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: start;
+    }
+
+    /* ── Gallery ── */
+    .gallery { position: sticky; top: 24px; }
+
+    .gallery-main {
+      background: #f4f1ec;
+      border-radius: 4px;
+      overflow: hidden;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .gallery-main img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s ease;
+    }
+    .gallery-main:hover img { transform: scale(1.04); }
+
+    .gallery-thumbs {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .thumb {
+      width: 72px;
+      height: 72px;
+      border-radius: 3px;
+      overflow: hidden;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: border-color 0.2s;
+      flex-shrink: 0;
+      background: #f4f1ec;
+    }
+    .thumb.active { border-color: #b8902e; }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* ── Info Panel ── */
+    .product-info {}
+
+    .product-badges {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 2px;
+    }
+    .badge-new { background: #1a1a1a; color: #fff; }
+    .badge-featured { background: #b8902e; color: #fff; }
+    .badge-cat { background: #f0ebe2; color: #7a6840; }
+
+    .product-category {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #b8902e;
+      margin-bottom: 10px;
+    }
+
+    .product-name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(24px, 3vw, 36px);
+      font-weight: 600;
+      line-height: 1.2;
+      margin: 0 0 20px;
+      color: #1a1a1a;
+    }
+
+    .product-price-block {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid #ece9e3;
+    }
+    .price-main {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+    .price-currency { font-size: 18px; font-weight: 400; color: #555; }
+    .price-note { font-size: 12px; color: #999; }
+
+    .product-short-desc {
+      font-size: 14px;
+      line-height: 1.7;
+      color: #555;
+      margin-bottom: 28px;
+    }
+
+    /* ── Specs Grid ── */
+    .specs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: #ece9e3;
+      border: 1px solid #ece9e3;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 28px;
+    }
+    .spec-cell {
+      background: #fff;
+      padding: 14px 16px;
+    }
+    .spec-label {
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #b8902e;
+      margin-bottom: 4px;
+    }
+    .spec-value {
+      font-size: 13px;
+      font-weight: 500;
+      color: #1a1a1a;
+    }
+
+    /* ── Quantity + Actions ── */
+    .quantity-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .qty-label { font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: #888; }
+    .qty-control {
+      display: flex;
+      align-items: center;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .qty-btn {
+      width: 36px;
+      height: 36px;
+      background: none;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      color: #555;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .qty-btn:hover { background: #f4f1ec; }
+    .qty-input {
+      width: 44px;
+      text-align: center;
+      border: none;
+      border-left: 1px solid #ddd;
+      border-right: 1px solid #ddd;
+      height: 36px;
+      font-size: 14px;
+      font-weight: 500;
+      outline: none;
+    }
+
+    .btn-add-cart {
+      width: 100%;
+      padding: 16px;
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: background 0.2s;
+      margin-bottom: 12px;
+    }
+    .btn-add-cart:hover { background: #b8902e; }
+
+    .btn-whatsapp {
+      width: 100%;
+      padding: 14px;
+      background: #fff;
+      color: #1a1a1a;
+      border: 1.5px solid #1a1a1a;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 3px;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+      transition: background 0.2s, color 0.2s;
+      margin-bottom: 24px;
+    }
+    .btn-whatsapp:hover { background: #25d366; border-color: #25d366; color: #fff; }
+
+    /* ── Trust badges ── */
+    .trust-row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      padding: 20px 0;
+      border-top: 1px solid #ece9e3;
+      border-bottom: 1px solid #ece9e3;
+      margin-bottom: 32px;
+    }
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: #666;
+    }
+    .trust-icon { font-size: 16px; }
+
+    /* ── Tabs ── */
+    .tabs { margin-bottom: 0; }
+    .tab-list {
+      display: flex;
+      border-bottom: 1px solid #ece9e3;
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      padding: 10px 20px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      color: #999;
+      transition: color 0.2s, border-color 0.2s;
+      margin-bottom: -1px;
+    }
+    .tab-btn.active { color: #1a1a1a; border-bottom-color: #b8902e; }
+    .tab-content { display: none; font-size: 14px; line-height: 1.8; color: #555; }
+    .tab-content.active { display: block; }
+    .tab-content ul { padding-left: 18px; margin: 0; }
+    .tab-content li { margin-bottom: 6px; }
+
+    /* ── Related ── */
+    .related-section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+      border-top: 1px solid #ece9e3;
+    }
+    .related-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 32px;
+      color: #1a1a1a;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+    .related-card {
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+    }
+    .related-img {
+      background: #f4f1ec;
+      border-radius: 3px;
+      overflow: hidden;
+      aspect-ratio: 1;
+      margin-bottom: 12px;
+    }
+    .related-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+    .related-card:hover .related-img img { transform: scale(1.05); }
+    .related-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    .related-cat { font-size: 11px; color: #b8902e; letter-spacing: 1px; text-transform: uppercase; }
+    .related-price { font-size: 14px; font-weight: 600; margin-top: 4px; }
+
+    /* ── Stock indicator ── */
+    .stock-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 20px;
+    }
+    .stock-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      flex-shrink: 0;
+    }
+    .stock-dot.out { background: #ef4444; }
+
+    /* ── Loading ── */
+    .loading-skeleton {
+      animation: pulse 1.5s infinite;
+      background: linear-gradient(90deg, #f4f1ec 25%, #ece9e3 50%, #f4f1ec 75%);
+      background-size: 200% 100%;
+      border-radius: 4px;
+    }
+    @keyframes pulse {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    @media (max-width: 900px) {
+      .product-page { grid-template-columns: 1fr; gap: 32px; }
+      .gallery { position: static; }
+      .related-grid { grid-template-columns: repeat(2, 1fr); }
+      .breadcrumb { padding: 12px 20px; }
+      .product-page { padding: 24px 20px 60px; }
+    }
+    @media (max-width: 480px) {
+      .specs-grid { grid-template-columns: 1fr; }
+      .related-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .trust-row { flex-direction: column; gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar from style.css -->
+  <nav class="navbar">
+    <a class="logo" href="index.html">LEGRAND <span>JOYAS</span></a>
+    <div id="nav-links">
+      <a href="index.html">Inicio</a>
+      <a href="catalogo.html">Catálogo</a>
+      <a href="carrito.html">Carrito (<span id="cart-count">0</span>)</a>
+      <a href="login.html" id="login-link">Iniciar Sesión</a>
+    </div>
+  </nav>
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb" id="breadcrumb">
+    <a href="index.html">Inicio</a><span>›</span>
+    <a href="catalogo.html">Catálogo</a><span>›</span>
+    <span id="bc-category">...</span><span>›</span>
+    <span id="bc-name">...</span>
+  </div>
+
+  <!-- Product Detail -->
+  <div class="product-page" id="product-page" style="display:none;">
+
+    <!-- Gallery -->
+    <div class="gallery">
+      <div class="gallery-main" id="gallery-main">
+        <img id="main-img" src="" alt="">
+      </div>
+      <div class="gallery-thumbs" id="gallery-thumbs"></div>
+    </div>
+
+    <!-- Info -->
+    <div class="product-info">
+      <div class="product-badges" id="product-badges"></div>
+      <div class="product-category" id="product-category"></div>
+      <h1 class="product-name" id="product-name"></h1>
+
+      <div class="product-price-block">
+        <div class="price-main">
+          <span class="price-currency">$</span><span id="product-price"></span>
+        </div>
+        <div class="price-note">Precio en USD · IVA incluido</div>
+      </div>
+
+      <p class="product-short-desc" id="product-short-desc"></p>
+
+      <!-- Specs -->
+      <div class="specs-grid" id="specs-grid"></div>
+
+      <!-- Stock -->
+      <div class="stock-row" id="stock-row">
+        <div class="stock-dot" id="stock-dot"></div>
+        <span id="stock-text"></span>
+      </div>
+
+      <!-- Quantity -->
+      <div class="quantity-row">
+        <span class="qty-label">Cantidad</span>
+        <div class="qty-control">
+          <button class="qty-btn" onclick="changeQty(-1)">−</button>
+          <input class="qty-input" type="number" id="qty" value="1" min="1" max="10">
+          <button class="qty-btn" onclick="changeQty(1)">+</button>
+        </div>
+      </div>
+
+      <button class="btn-add-cart" onclick="addToCart()">Agregar al Carrito</button>
+      <a class="btn-whatsapp" id="whatsapp-link" href="#" target="_blank">
+        Consultar por WhatsApp
+      </a>
+
+      <!-- Trust -->
+      <div class="trust-row">
+        <div class="trust-item"><span class="trust-icon">🔒</span>Pago 100% seguro</div>
+        <div class="trust-item"><span class="trust-icon">📦</span>Envío con seguro incluido</div>
+        <div class="trust-item"><span class="trust-icon">✅</span>Certificado de autenticidad</div>
+        <div class="trust-item"><span class="trust-icon">↩️</span>Garantía oficial Legrand</div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <div class="tab-list">
+          <button class="tab-btn active" onclick="switchTab('desc', this)">Descripción</button>
+          <button class="tab-btn" onclick="switchTab('care', this)">Cuidados</button>
+          <button class="tab-btn" onclick="switchTab('guarantee', this)">Garantía</button>
+        </div>
+        <div class="tab-content active" id="tab-desc"></div>
+        <div class="tab-content" id="tab-care">
+          <ul>
+            <li>Guardar en estuche acolchado, alejado de otros metales.</li>
+            <li>Evitar contacto con perfumes, cosméticos y productos químicos.</li>
+            <li>Limpiar con paño de microfibra suave y seco.</li>
+            <li>Retirar antes de actividades físicas, natación o baño.</li>
+            <li>Para limpieza profunda, visitar una joyería Legrand autorizada.</li>
+          </ul>
+        </div>
+        <div class="tab-content" id="tab-guarantee">
+          <ul>
+            <li>Garantía oficial Legrand contra defectos de fabricación.</li>
+            <li>El certificado de autenticidad se entrega con cada pieza.</li>
+            <li>Revisiones gratuitas en locales autorizados durante la vigencia.</li>
+            <li>No cubre daños por uso inadecuado, golpes o pérdida de gemas.</li>
+            <li>Para servicios de garantía, presentar ticket de compra y certificado.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Related Products -->
+  <div class="related-section" id="related-section" style="display:none;">
+    <h2 class="related-title">También te puede interesar</h2>
+    <div class="related-grid" id="related-grid"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/products.js"></script>
+  <script src="assets/js/cart.js"></script>
+  <script>
+    var currentProduct = null;
+
+    function getParam(key) {
+      return new URLSearchParams(window.location.search).get(key);
+    }
+
+    async function loadProduct() {
+      var id = Number(getParam('id'));
+      if (!id) return location.href = 'catalogo.html';
+
+      // Try Supabase first
+      var product = null;
+      try {
+        var res = await supabase.from('productos').select('*, categoria:categorias(nombre)').eq('id', id).single();
+        if (res.data) product = res.data;
+      } catch(e) {}
+
+      // Fallback to local catalog
+      if (!product) {
+        product = JEWELRY_CATALOG.find(function(p){ return p.id === id; });
+      }
+
+      if (!product) {
+        document.body.innerHTML = '<div style="text-align:center;padding:80px 20px;font-family:Inter,sans-serif"><h2>Producto no encontrado</h2><a href="catalogo.html" style="color:#b8902e">← Volver al catálogo</a></div>';
+        return;
+      }
+
+      currentProduct = product;
+      render(product);
+      loadRelated(product);
+      updateCartCount();
+      updateLoginLink();
+    }
+
+    function render(p) {
+      // Breadcrumb
+      document.getElementById('bc-category').textContent = p.categoria?.nombre || 'Joyas';
+      document.getElementById('bc-name').textContent = p.nombre;
+      document.title = p.nombre + ' — Legrand Joyas';
+
+      // Badges
+      var badges = '';
+      if (p.nuevo) badges += '<span class="badge badge-new">Nuevo</span>';
+      if (p.destacado) badges += '<span class="badge badge-featured">Destacado</span>';
+      if (p.categoria?.nombre) badges += '<span class="badge badge-cat">' + p.categoria.nombre + '</span>';
+      document.getElementById('product-badges').innerHTML = badges;
+
+      // Category + Name
+      document.getElementById('product-category').textContent = p.categoria?.nombre || '';
+      document.getElementById('product-name').textContent = p.nombre;
+
+      // Price
+      document.getElementById('product-price').textContent = Number(p.precio).toLocaleString('es-AR', { minimumFractionDigits: 2 });
+
+      // Short desc
+      document.getElementById('product-short-desc').textContent = p.descripcion_corta || (p.specs ? p.specs.material || '' : '');
+
+      // Specs
+      var specs = p.specs || {};
+      var specLabels = { material: 'Material', piedra: 'Piedra', talla: 'Talla', largo: 'Largo', tipo: 'Tipo de arete', cierre: 'Cierre', esfera: 'Esfera', correa: 'Correa', garantia: 'Garantía', peso: 'Peso', movimiento: 'Movimiento' };
+      var specHtml = '';
+      Object.keys(specLabels).forEach(function(k) {
+        if (specs[k]) {
+          specHtml += '<div class="spec-cell"><div class="spec-label">' + specLabels[k] + '</div><div class="spec-value">' + specs[k] + '</div></div>';
+        }
+      });
+      document.getElementById('specs-grid').innerHTML = specHtml;
+
+      // Stock
+      var inStock = p.activo !== false;
+      document.getElementById('stock-dot').className = 'stock-dot' + (inStock ? '' : ' out');
+      document.getElementById('stock-text').textContent = inStock ? 'En stock — despacho en 24–48 hs' : 'Sin stock momentáneamente';
+
+      // Gallery
+      var imgs = Array.isArray(p.imagenes) && p.imagenes.length ? p.imagenes : [p.imagen || ''];
+      var mainImg = document.getElementById('main-img');
+      mainImg.src = imgs[0];
+      mainImg.alt = p.nombre;
+
+      // Extra angles — generate 3 more crops of same image
+      var allImgs = [imgs[0]];
+      var baseUrl = imgs[0].split('?')[0];
+      allImgs.push(baseUrl + '?w=900&h=900&fit=crop&crop=top&auto=format&q=80');
+      allImgs.push(baseUrl + '?w=900&h=900&fit=crop&crop=bottom&auto=format&q=80');
+      allImgs.push(baseUrl + '?w=900&h=1100&fit=crop&auto=format&q=80');
+
+      var thumbsHtml = '';
+      allImgs.forEach(function(src, i) {
+        thumbsHtml += '<div class="thumb' + (i === 0 ? ' active' : '') + '" onclick="switchImg(this, \'' + src + '\')">' +
+          '<img src="' + src + '" alt="Vista ' + (i+1) + '" loading="lazy"></div>';
+      });
+      document.getElementById('gallery-thumbs').innerHTML = thumbsHtml;
+
+      // Long description tab
+      document.getElementById('tab-desc').textContent = p.descripcion || '';
+
+      // WhatsApp
+      var msg = encodeURIComponent('Hola Legrand Joyas! Me interesa el producto: ' + p.nombre + ' (ID ' + p.id + '). ¿Podrían darme más información?');
+      document.getElementById('whatsapp-link').href = 'https://wa.me/5493512967211?text=' + msg;
+
+      document.getElementById('product-page').style.display = 'grid';
+    }
+
+    function switchImg(thumb, src) {
+      document.getElementById('main-img').src = src;
+      document.querySelectorAll('.thumb').forEach(function(t){ t.classList.remove('active'); });
+      thumb.classList.add('active');
+    }
+
+    function switchTab(id, btn) {
+      document.querySelectorAll('.tab-content').forEach(function(t){ t.classList.remove('active'); });
+      document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+      document.getElementById('tab-' + id).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    function changeQty(delta) {
+      var input = document.getElementById('qty');
+      var v = Math.max(1, Math.min(10, (parseInt(input.value) || 1) + delta));
+      input.value = v;
+    }
+
+    function addToCart() {
+      if (!currentProduct) return;
+      var qty = parseInt(document.getElementById('qty').value) || 1;
+      var cart = JSON.parse(localStorage.getItem('legrand_cart') || '[]');
+      var existing = cart.find(function(i){ return i.id === currentProduct.id; });
+      if (existing) {
+        existing.cantidad = (existing.cantidad || 1) + qty;
+      } else {
+        cart.push({
+          id: currentProduct.id,
+          nombre: currentProduct.nombre,
+          precio: Number(currentProduct.precio),
+          imagenes: currentProduct.imagenes,
+          descripcion: currentProduct.descripcion_corta || currentProduct.descripcion,
+          cantidad: qty
+        });
+      }
+      localStorage.setItem('legrand_cart', JSON.stringify(cart));
+      updateCartCount();
+      var btn = document.querySelector('.btn-add-cart');
+      var orig = btn.textContent;
+      btn.textContent = '✓ Agregado al carrito';
+      btn.style.background = '#22c55e';
+      setTimeout(function(){ btn.textContent = orig; btn.style.background = ''; }, 2000);
+    }
+
+    function updateCartCount() {
+      var cart = JSON.parse(localStorage.getItem('legrand_cart') || '[]');
+      var count = cart.reduce(function(s, i){ return s + (i.cantidad || 1); }, 0);
+      var el = document.getElementById('cart-count');
+      if (el) el.textContent = count;
+    }
+
+    function loadRelated(p) {
+      var cat = p.categoria?.nombre;
+      var related = JEWELRY_CATALOG.filter(function(item){
+        return item.categoria?.nombre === cat && item.id !== p.id;
+      }).slice(0, 4);
+      if (!related.length) return;
+
+      var html = '';
+      related.forEach(function(r) {
+        var img = Array.isArray(r.imagenes) && r.imagenes.length ? r.imagenes[0] : '';
+        html += '<a class="related-card" href="producto.html?id=' + r.id + '">' +
+          '<div class="related-img"><img src="' + img + '" alt="' + r.nombre + '" loading="lazy"></div>' +
+          '<div class="related-cat">' + (r.categoria?.nombre || '') + '</div>' +
+          '<div class="related-name">' + r.nombre + '</div>' +
+          '<div class="related-price">$' + Number(r.precio).toLocaleString('es-AR') + '</div>' +
+          '</a>';
+      });
+      document.getElementById('related-grid').innerHTML = html;
+      document.getElementById('related-section').style.display = 'block';
+    }
+
+    async function updateLoginLink() {
+      try {
+        var res = await supabase.auth.getSession();
+        var loginLink = document.getElementById('login-link');
+        if (res.data?.session?.user && loginLink) {
+          loginLink.textContent = 'Mi cuenta';
+          loginLink.href = 'perfil.html';
+        }
+      } catch(e) {}
+    }
+
+    loadProduct();
+  </script>
+</body>
+</html>

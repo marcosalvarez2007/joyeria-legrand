@@ -1,0 +1,304 @@
+ <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de Compras - Legrand Joyas</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="index.html" class="logo">
+                    <i class="fas fa-gem"></i> Legrand Joyas
+                </a>
+            </div>
+            <div class="nav-center">
+                <input type="text" class="search-input" placeholder="Buscar joyas...">
+            </div>
+            <div class="nav-right">
+                <a href="carrito.html" class="nav-link">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Carrito</span>
+                </a>
+                <div class="user-menu-trigger" id="userMenuTrigger">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="profile-main">
+        <div class="profile-container">
+            <!-- Sidebar -->
+            <aside class="profile-sidebar">
+                <div class="profile-nav">
+                    <a href="perfil.html" class="profile-nav-item">
+                        <i class="fas fa-user"></i>
+                        <span>Mi Perfil</span>
+                    </a>
+                    <a href="perfil.html#privacidad" class="profile-nav-item">
+                        <i class="fas fa-lock"></i>
+                        <span>Privacidad</span>
+                    </a>
+                    <a href="historial.html" class="profile-nav-item active">
+                        <i class="fas fa-history"></i>
+                        <span>Historial</span>
+                    </a>
+                    <a href="pedidos.html" class="profile-nav-item">
+                        <i class="fas fa-truck"></i>
+                        <span>Mis Pedidos</span>
+                    </a>
+                </div>
+            </aside>
+
+            <!-- Content Area -->
+            <div class="profile-content">
+                <section class="profile-section active">
+                    <div class="section-header">
+                        <h2>Historial de Compras</h2>
+                    </div>
+
+                    <div class="purchases-container" id="purchasesContainer">
+                        <p style="text-align: center; color: #999; padding: 40px;">
+                            <i class="fas fa-spinner fa-spin"></i> Cargando compras...
+                        </p>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- User Menu Dropdown -->
+    <div class="user-menu-dropdown" id="userMenuDropdown">
+        <div class="dropdown-header">
+            <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Perfil" class="profile-image" style="width: 100px; height: 100px; max-width: 100px; border-radius: 50%; object-fit: cover;">
+            <div class="dropdown-user-info">
+                <h4 id="dropdownName">Nombre Apellido</h4>
+                <p id="dropdownEmail">usuario@email.com</p>
+            </div>
+        </div>
+        <div class="dropdown-menu">
+            <a href="perfil.html" class="dropdown-item">
+                <i class="fas fa-user"></i> Mi Perfil
+            </a>
+            <a href="historial.html" class="dropdown-item">
+                <i class="fas fa-history"></i> Historial
+            </a>
+            <a href="pedidos.html" class="dropdown-item">
+                <i class="fas fa-truck"></i> Mis Pedidos
+            </a>
+            <hr>
+            <a href="#" class="dropdown-item" id="logoutLink">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script>
+        // User Profile Management for Historial
+        let currentUser = null;
+        
+        async function initHistorial() {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                if (!user) {
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 500);
+                    return;
+                }
+
+                currentUser = user;
+                console.log('Usuario autenticado:', user.email);
+                
+                // Setup event listeners
+                setupEventListeners();
+                setupUserMenuDropdown();
+                
+                // Load purchase history
+                await loadPurchaseHistory(user.id);
+                
+                // Update user menu
+                updateUserMenu(user);
+                
+            } catch (error) {
+                console.error('Error inicializando historial:', error);
+            }
+        }
+
+        async function loadPurchaseHistory(userId) {
+            try {
+                const container = document.getElementById('purchasesContainer');
+                if (!container) return;
+                
+                console.log('Cargando historial para usuario:', userId);
+
+                const { data: purchases, error } = await supabase
+                    .from('pedidos')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .eq('estado', 'entregado')
+                    .order('created_at', { ascending: false })
+                    .limit(50);
+
+                if (error) throw error;
+                
+                if (!purchases || purchases.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 60px 20px;">
+                            <i class="fas fa-shopping-bag" style="font-size: 48px; color: #ccc; margin-bottom: 20px;"></i>
+                            <p style="color: #999; font-size: 18px;">No tienes compras registradas</p>
+                            <p style="color: #bbb; font-size: 14px; margin-top: 10px;">Comienza a comprar joyas exclusivas</p>
+                            <a href="catalogo.html" class="btn-primary" style="margin-top: 20px; display: inline-block;">
+                                <i class="fas fa-shopping-bag"></i> Ver Catálogo
+                            </a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = '';
+                purchases.forEach(purchase => {
+                    const purchaseDate = new Date(purchase.created_at);
+                    const formattedDate = purchaseDate.toLocaleDateString('es-AR');
+
+                    const items = purchase.items || [];
+                    const itemsHtml = items.length > 0 
+                        ? items.map(item => `
+                            <div class="purchase-product-item">
+                                <span>${item.nombre || 'Producto'}</span>
+                                <span>x${item.cantidad || 1}</span>
+                                <span>$${item.precio || 0}</span>
+                            </div>
+                        `).join('')
+                        : '<div class="purchase-product-item"><span>Productos en esta compra</span></div>';
+
+                    const html = `
+                        <div class="purchase-card">
+                            <div class="purchase-header">
+                                <div class="purchase-id-section">
+                                    <h3>#${purchase.id}</h3>
+                                    <p class="purchase-date">${formattedDate}</p>
+                                </div>
+                                <span class="order-status status-delivered">Entregado</span>
+                            </div>
+                            
+                            <div class="purchase-details">
+                                <div class="purchase-info-row">
+                                    <span class="label">Cliente:</span>
+                                    <span class="value">${purchase.cliente_nombre || 'No especificado'}</span>
+                                </div>
+                                <div class="purchase-info-row">
+                                    <span class="label">Total:</span>
+                                    <span class="value" style="font-weight: bold; color: #667eea;">$${parseFloat(purchase.total || 0).toFixed(2)}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="purchase-products">
+                                <h4 style="margin-top: 15px; margin-bottom: 10px; font-size: 14px; color: #666;">Productos Entregados:</h4>
+                                ${itemsHtml}
+                            </div>
+                            
+                            <div class="purchase-actions">
+                                <button class="btn-small" onclick="viewPurchaseDetails('${purchase.id}')">
+                                    <i class="fas fa-eye"></i> Ver Detalles
+                                </button>
+                                <button class="btn-small" onclick="reorderPurchase('${purchase.id}')">
+                                    <i class="fas fa-redo"></i> Reordenar
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += html;
+                });
+
+                console.log('Compras cargadas:', purchases.length);
+            } catch (error) {
+                console.error('Error loading purchase history:', error);
+                const container = document.getElementById('purchasesContainer');
+                if (container) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px;">
+                            <i class="fas fa-exclamation-circle" style="font-size: 48px; color: #e74c3c; margin-bottom: 20px;"></i>
+                            <p style="color: #e74c3c;">Error al cargar el historial</p>
+                            <p style="color: #999; font-size: 14px; margin-top: 10px;">Intenta recargar la página</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function updateUserMenu(user) {
+            const dropdownName = document.getElementById('dropdownName');
+            const dropdownEmail = document.getElementById('dropdownEmail');
+            
+            if (dropdownName && user.user_metadata?.full_name) {
+                dropdownName.textContent = user.user_metadata.full_name;
+            }
+            if (dropdownEmail) {
+                dropdownEmail.textContent = user.email;
+            }
+        }
+
+        function viewPurchaseDetails(purchaseId) {
+            alert('Detalles de la compra #' + purchaseId);
+        }
+
+        function reorderPurchase(purchaseId) {
+            alert('Reorden de compra #' + purchaseId + ' - próximamente');
+        }
+
+        function setupEventListeners() {
+            const logoutLink = document.getElementById('logoutLink');
+            if (logoutLink) {
+                logoutLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    logout();
+                });
+            }
+        }
+
+        function setupUserMenuDropdown() {
+            const trigger = document.getElementById('userMenuTrigger');
+            const dropdown = document.getElementById('userMenuDropdown');
+
+            if (!trigger || !dropdown) return;
+
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('active');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.remove('active');
+                }
+            });
+        }
+
+        async function logout() {
+            try {
+                await supabase.auth.signOut();
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 500);
+            } catch (error) {
+                console.error('Error logging out:', error);
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', initHistorial);
+    </script>
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joyeria Legrand - Joyeria Legrand</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <div class="topbar">
+        <p>10% de descuento en transferencia · 3 cuotas sin interés · Envío gratis desde $30.000</p>
+    </div>
+
+    <header class="home-header">
+        <div class="header-left">
+            <form class="search-form" action="catalogo.html">
+                <input type="search" placeholder="Buscar" aria-label="Buscar productos">
+                <button type="submit">🔍</button>
+            </form>
+        </div>
+        <div class="header-center">
+            <a class="logo" href="index.html">LEGRAND <span>JOYAS</span></a>
+        </div>
+        <div class="header-right">
+            <!-- User Menu when not logged in -->
+            <div id="auth-buttons" class="auth-buttons">
+                <a href="registro.html">Crear cuenta</a>
+                <a href="login.html">Iniciar sesión</a>
+            </div>
+            
+            <!-- User Menu when logged in -->
+            <div id="user-menu-bubble" class="user-menu-bubble" style="display: none;">
+                <button class="user-bubble-btn" id="userBubbleBtn">
+                    <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Perfil" class="profile-image" style="width: 100px; height: 100px; max-width: 100px; border-radius: 50%; object-fit: cover;">
+                </button>
+                
+                <div class="user-bubble-dropdown" id="userBubbleDropdown">
+                    <div class="bubble-header">
+                        <img id="bubbleUserImage" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=50&h=50&fit=crop" alt="Usuario">
+                        <div class="bubble-user-info">
+                            <h4 id="bubbleUserName">Usuario</h4>
+                            <p id="bubbleUserEmail">usuario@email.com</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bubble-menu">
+                        <a href="perfil.html" class="bubble-item">
+                            <i class="icon">👤</i> Mi Perfil
+                        </a>
+                        <a href="historial.html" class="bubble-item">
+                            <i class="icon">📦</i> Historial de Compras
+                        </a>
+                        <a href="pedidos.html" class="bubble-item">
+                            <i class="icon">🚚</i> Mis Pedidos
+                        </a>
+                        <a href="perfil.html#privacidad" class="bubble-item">
+                            <i class="icon">🔒</i> Seguridad
+                        </a>
+                        <a href="admin/gestion-stock.html" class="bubble-item" id="adminLink" style="display: none;">
+                            <i class="icon">⚙️</i> Administración
+                        </a>
+                        <hr>
+                        <button id="logoutBubbleBtn" class="bubble-item logout">
+                            <i class="icon">🚪</i> Cerrar Sesión
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <a class="cart-link" href="carrito.html">Carrito (<span id="cart-count">0</span>)</a>
+        </div>
+    </header>
+
+    <nav class="home-nav">
+        <a href="index.html">Inicio</a>
+        <a href="catalogo.html#anillos">Anillos</a>
+        <a href="catalogo.html#collares">Collares</a>
+        <a href="catalogo.html#aretes">Aretes</a>
+        <a href="catalogo.html#pulseras">Pulseras</a>
+        <a href="catalogo.html#relojes">Relojes</a>
+    </nav>
+
+    <section class="hero hero-home">
+        <div class="hero-copy">
+            <p class="eyebrow">Novedades de joyería</p>
+            <h1>Brilla con elegancia única</h1>
+            <p>Descubre colecciones seleccionadas en oro, plata y diamante, con envío gratis y descuentos exclusivos en transferencia.</p>
+            <div class="hero-buttons">
+                <a class="btn btn-primary" href="catalogo.html">Ver colección</a>
+                <a class="btn btn-outline" href="registro.html">Acceder ahora</a>
+            </div>
+        </div>
+        <div class="hero-media video-card">
+            <video autoplay muted loop playsinline poster="https://images.pexels.com/photos/265906/pexels-photo-265906.jpeg">
+                <source src="https://assets.mixkit.co/videos/preview/mixkit-close-up-of-a-woman-wearing-jewelry-41352-large.mp4" type="video/mp4">
+                Tu navegador no soporta video.
+            </video>
+        </div>
+    </section>
+
+    <section class="collections-section">
+        <div class="page-content">
+            <div class="section-heading">
+                <span class="eyebrow">Nuestras joyas</span>
+                <h2>Joyas exclusivas</h2>
+                <p>Explora nuestras piezas más vendidas con precios transparentes y beneficios exclusivos.</p>
+            </div>
+            <div class="product-grid" id="featured-products"></div>
+            <div class="collections-footer">
+                <a class="btn btn-secondary" href="catalogo.html">Ver todos los productos</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="promo-row">
+        <div class="promo-card">
+            <h3>Envío gratis</h3>
+            <p>Desde $30.000 a todo el país.</p>
+        </div>
+        <div class="promo-card">
+            <h3>-10% transferencia</h3>
+            <p>Descuento exclusivo online.</p>
+        </div>
+        <div class="promo-card">
+            <h3>3 cuotas sin interés</h3>
+            <p>Comprá con tarjeta sin costo adicional.</p>
+        </div>
+    </section>
+
+    <section class="payments-showcase">
+        <div class="payments-showcase-inner">
+            <div class="payments-showcase-icon">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="20" cy="6.5" r="2" stroke="currentColor" stroke-width="1.2"/>
+                    <path d="M9 15 L20 8 L31 15 L20 34 Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+                    <path d="M9 15 H31 M14.5 15 L20 8 M25.5 15 L20 8 M14.5 15 L20 34 M25.5 15 L20 34" stroke="currentColor" stroke-width="1"/>
+                </svg>
+            </div>
+            <h2>Medios de pago</h2>
+            <div class="payments-showcase-divider">
+                <span class="divider-line"></span>
+                <span class="divider-dot">✦</span>
+                <span class="divider-line"></span>
+            </div>
+            <div class="payments-showcase-grid">
+                <div class="payment-card">
+                    <span class="payment-card-icon">
+                        <svg viewBox="0 0 48 30" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="48" height="30" fill="#fff"/>
+                            <text x="24" y="20" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-weight="700" font-size="13" fill="#1a1f71">VISA</text>
+                        </svg>
+                    </span>
+                    <span class="payment-card-info">
+                        <span class="payment-card-name">VISA</span>
+                        <span class="payment-card-sub">Débito y crédito</span>
+                    </span>
+                    <span class="payment-card-chevron">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg>
+                    </span>
+                </div>
+                <div class="payment-card">
+                    <span class="payment-card-icon">
+                        <svg viewBox="0 0 48 30" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="48" height="30" fill="#fff"/>
+                            <circle cx="20" cy="15" r="9" fill="#eb001b"/>
+                            <circle cx="28" cy="15" r="9" fill="#f79e1b" opacity="0.9"/>
+                        </svg>
+                    </span>
+                    <span class="payment-card-info">
+                        <span class="payment-card-name">Mastercard</span>
+                        <span class="payment-card-sub">Débito y crédito</span>
+                    </span>
+                    <span class="payment-card-chevron">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg>
+                    </span>
+                </div>
+                <div class="payment-card">
+                    <span class="payment-card-icon">
+                        <svg viewBox="0 0 48 30" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="48" height="30" fill="#016fd0"/>
+                            <text x="24" y="19" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="8" fill="#fff">AMEX</text>
+                        </svg>
+                    </span>
+                    <span class="payment-card-info">
+                        <span class="payment-card-name">American Express</span>
+                        <span class="payment-card-sub">Tarjetas seleccionadas</span>
+                    </span>
+                    <span class="payment-card-chevron">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg>
+                    </span>
+                </div>
+                <div class="payment-card">
+                    <span class="payment-card-icon">
+                        <svg viewBox="0 0 48 30" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="48" height="30" fill="#fff"/>
+                            <text x="24" y="14" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="7" fill="#00b1ea">mercado</text>
+                            <text x="24" y="23" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="7" fill="#2d3277">pago</text>
+                        </svg>
+                    </span>
+                    <span class="payment-card-info">
+                        <span class="payment-card-name">Mercado Pago</span>
+                        <span class="payment-card-sub">Pagos online</span>
+                    </span>
+                    <span class="payment-card-chevron">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"></polyline></svg>
+                    </span>
+                </div>
+            </div>
+            <div class="payments-showcase-note">
+                <span class="note-line"></span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                <span>Tus pagos están protegidos</span>
+                <span class="note-line"></span>
+            </div>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <div class="footer-top">
+            <span>Síguenos en Instagram</span>
+            <a href="https://www.instagram.com/dynamokuyt/" target="_blank" rel="noopener noreferrer">@dynamokuyt</a>
+        </div>
+        <div class="footer-grid">
+            <div class="footer-column">
+                <h3>Navegación</h3>
+                <ul class="footer-links">
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="catalogo.html#anillos">Anillos</a></li>
+                    <li><a href="catalogo.html#collares">Collares</a></li>
+                    <li><a href="catalogo.html#aretes">Aretes</a></li>
+                    <li><a href="catalogo.html#pulseras">Pulseras</a></li>
+                    <li><a href="catalogo.html#relojes">Relojes</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Envíos</h3>
+                <p>Envíos nacionales con retiro en sucursal o domicilio.</p>
+                <h4>Medios de pago</h4>
+                <p>Visa, Mastercard, American Express y Mercado Pago.</p>
+            </div>
+            <div class="footer-column">
+                <h3>Contáctanos</h3>
+                <p>WhatsApp Shop: <a href="https://wa.me/5493512967211" target="_blank">351 352 4682</a></p>
+                <p>Email: <a href="mailto:dynamokuyt@mail.com">dynamokuyt@mail.com</a></p>
+                <p>Envíos online: de Lunes a Viernes.</p>
+            </div>
+            <div class="footer-column">
+                <h3>Redes sociales</h3>
+                <div class="footer-socials">
+                    <a href="https://www.instagram.com/dynamokuyt/" target="_blank" rel="noopener noreferrer">Instagram</a>
+                </div>
+                <h4>Newsletter</h4>
+                <form class="footer-newsletter" action="#" method="POST">
+                    <input type="email" placeholder="Email" aria-label="Email" required>
+                    <button type="submit">Enviar</button>
+                </form>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>Copyright Dynamo Kuyt Joyas - Joyería en Córdoba - 2026. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/products.js"></script>
+    <script src="assets/js/cart.js"></script>
+    <script src="assets/js/main.js"></script>
+</body>
+</html>

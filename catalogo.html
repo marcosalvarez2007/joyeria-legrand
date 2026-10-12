@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catalogo - Legrand Joyas</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a class="logo" href="index.html">LEGRAND <span>JOYAS</span></a>
+        <div>
+            <a href="index.html">Inicio</a>
+            <a class="auth-link" href="login.html">Iniciar Sesión</a>
+            <a href="carrito.html">Carrito (<span id="cart-count">0</span>)</a>
+        </div>
+    </nav>
+
+    <section>
+        <div class="page-content">
+            <div class="catalog-header">
+                <div>
+                    <p class="eyebrow">Catálogo Premium</p>
+                    <h2 id="catalog-title">Colección de joyas Legrand</h2>
+                    <p id="catalog-subtitle">Explora piezas exclusivas con materiales nobles, diseños atemporales y detalles de alta joyería. Haz clic en cada producto para conocer sus características y contactarnos en WhatsApp.</p>
+                </div>
+                <div class="catalog-actions">
+                    <div class="catalog-search">
+                        <div class="catalog-search-input">
+                            <input id="catalog-search" type="search" placeholder="Buscar joyas, anillos, aretes..." aria-label="Buscar productos">
+                            <div class="catalog-suggestions" id="catalog-suggestions" aria-live="polite"></div>
+                        </div>
+                        <button id="catalog-search-btn" class="btn btn-small" type="button">Buscar</button>
+                    </div>
+                    <a class="btn btn-secondary" href="https://wa.me/5493512967211?text=Hola%20Legrand%20Joyas,%20quiero%20m%C3%A1s%20informaci%C3%B3n%20sobre%20sus%20productos" target="_blank">Contactar por WhatsApp</a>
+                </div>
+            </div>
+            <div class="category-filters" id="category-filters"></div>
+            <div class="product-grid" id="product-list"></div>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/products.js"></script>
+    <script src="assets/js/cart.js"></script>
+    <script src="assets/js/main.js"></script>
+</body>
+</html>

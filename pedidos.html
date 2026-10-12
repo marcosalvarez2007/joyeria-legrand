@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Pedidos - Legrand Joyas</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="index.html" class="logo">
+                    <i class="fas fa-gem"></i> Legrand Joyas
+                </a>
+            </div>
+            <div class="nav-center">
+                <input type="text" class="search-input" placeholder="Buscar joyas...">
+            </div>
+            <div class="nav-right">
+                <a href="carrito.html" class="nav-link">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Carrito</span>
+                </a>
+                <div class="user-menu-trigger" id="userMenuTrigger">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="profile-main">
+        <div class="profile-container">
+            <!-- Sidebar -->
+            <aside class="profile-sidebar">
+                <div class="profile-nav">
+                    <a href="perfil.html" class="profile-nav-item">
+                        <i class="fas fa-user"></i>
+                        <span>Mi Perfil</span>
+                    </a>
+                    <a href="perfil.html#privacidad" class="profile-nav-item">
+                        <i class="fas fa-lock"></i>
+                        <span>Privacidad</span>
+                    </a>
+                    <a href="historial.html" class="profile-nav-item">
+                        <i class="fas fa-history"></i>
+                        <span>Historial</span>
+                    </a>
+                    <a href="pedidos.html" class="profile-nav-item active">
+                        <i class="fas fa-truck"></i>
+                        <span>Mis Pedidos</span>
+                    </a>
+                </div>
+            </aside>
+
+            <!-- Content Area -->
+            <div class="profile-content">
+                <section class="profile-section active">
+                    <div class="section-header">
+                        <h2>Mis Pedidos en Tránsito</h2>
+                    </div>
+
+                    <div class="orders-container" id="ordersContainer">
+                        <p style="text-align: center; color: #999; padding: 40px;">
+                            <i class="fas fa-spinner fa-spin"></i> Cargando pedidos...
+                        </p>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- User Menu Dropdown -->
+    <div class="user-menu-dropdown" id="userMenuDropdown">
+        <div class="dropdown-header">
+            <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Perfil" class="profile-image" style="width: 100px; height: 100px; max-width: 100px; border-radius: 50%; object-fit: cover;">
+            <div class="dropdown-user-info">
+                <h4 id="dropdownName">Nombre Apellido</h4>
+                <p id="dropdownEmail">usuario@email.com</p>
+            </div>
+        </div>
+        <div class="dropdown-menu">
+            <a href="perfil.html" class="dropdown-item">
+                <i class="fas fa-user"></i> Mi Perfil
+            </a>
+            <a href="historial.html" class="dropdown-item">
+                <i class="fas fa-history"></i> Historial
+            </a>
+            <a href="pedidos.html" class="dropdown-item">
+                <i class="fas fa-truck"></i> Mis Pedidos
+            </a>
+            <hr>
+            <a href="#" class="dropdown-item" id="logoutLink">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script>
+        // User Profile Management for Pedidos
+        let currentUser = null;
+        
+        async function initPedidos() {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                if (!user) {
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 500);
+                    return;
+                }
+
+                currentUser = user;
+                console.log('Usuario autenticado:', user.email);
+                
+                // Setup event listeners
+                setupEventListeners();
+                setupUserMenuDropdown();
+                
+                // Load orders
+                await loadOrdersInTransit(user.id);
+                
+                // Update user menu
+                updateUserMenu(user);
+                
+            } catch (error) {
+                console.error('Error inicializando pedidos:', error);
+            }
+        }
+
+        async function loadOrdersInTransit(userId) {
+            try {
+                const container = document.getElementById('ordersContainer');
+                if (!container) return;
+                
+                console.log('Cargando pedidos para usuario:', userId);
+
+                const { data: orders, error } = await supabase
+                    .from('pedidos')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .in('estado', ['pendiente', 'en_transito'])
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                
+                if (!orders || orders.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 60px 20px;">
+                            <i class="fas fa-box" style="font-size: 48px; color: #ccc; margin-bottom: 20px;"></i>
+                            <p style="color: #999; font-size: 18px;">No tienes pedidos en tránsito</p>
+                            <p style="color: #bbb; font-size: 14px; margin-top: 10px;">Cuando realices tu próxima compra, aparecerá aquí</p>
+                            <a href="catalogo.html" class="btn-primary" style="margin-top: 20px; display: inline-block;">
+                                <i class="fas fa-shopping-bag"></i> Ver Catálogo
+                            </a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = '';
+                orders.forEach(order => {
+                    const orderDate = new Date(order.created_at);
+                    const formattedDate = orderDate.toLocaleDateString('es-AR');
+                    
+                    const statusText = order.estado === 'en_transito' ? 'En Tránsito' : 'Pendiente';
+                    const statusClass = order.estado === 'en_transito' ? 'status-transit' : 'status-pending';
+
+                    const items = order.items || [];
+                    const itemsHtml = items.length > 0 
+                        ? items.map(item => `
+                            <div class="order-product-item">
+                                <span>${item.nombre || 'Producto'}</span>
+                                <span>x${item.cantidad || 1}</span>
+                                <span>$${item.precio || 0}</span>
+                            </div>
+                        `).join('')
+                        : '<div class="order-product-item"><span>Productos en este pedido</span></div>';
+
+                    const html = `
+                        <div class="order-card">
+                            <div class="order-header">
+                                <div class="order-id-section">
+                                    <h3>#${order.id}</h3>
+                                    <p class="order-date">${formattedDate}</p>
+                                </div>
+                                <span class="order-status ${statusClass}">${statusText}</span>
+                            </div>
+                            
+                            <div class="order-details">
+                                <div class="order-info-row">
+                                    <span class="label">Cliente:</span>
+                                    <span class="value">${order.cliente_nombre || 'No especificado'}</span>
+                                </div>
+                                <div class="order-info-row">
+                                    <span class="label">Total:</span>
+                                    <span class="value" style="font-weight: bold; color: #667eea;">$${parseFloat(order.total || 0).toFixed(2)}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="order-products">
+                                <h4 style="margin-top: 15px; margin-bottom: 10px; font-size: 14px; color: #666;">Productos:</h4>
+                                ${itemsHtml}
+                            </div>
+                            
+                            <div class="order-tracking">
+                                <div class="tracking-step">
+                                    <div class="tracking-icon completed">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div class="tracking-info">
+                                        <h5>Pedido Confirmado</h5>
+                                        <p>${formattedDate}</p>
+                                    </div>
+                                </div>
+                                
+                                ${order.estado === 'en_transito' ? `
+                                <div class="tracking-step">
+                                    <div class="tracking-icon active">
+                                        <i class="fas fa-truck"></i>
+                                    </div>
+                                    <div class="tracking-info">
+                                        <h5>En Camino</h5>
+                                        <p>Tu pedido está en tránsito y llegará pronto</p>
+                                    </div>
+                                </div>
+                                ` : `
+                                <div class="tracking-step">
+                                    <div class="tracking-icon">
+                                        <i class="fas fa-box-open"></i>
+                                    </div>
+                                    <div class="tracking-info">
+                                        <h5>Preparándose</h5>
+                                        <p>Estamos preparando tu pedido</p>
+                                    </div>
+                                </div>
+                                `}
+                                
+                                <div class="tracking-step">
+                                    <div class="tracking-icon">
+                                        <i class="fas fa-home"></i>
+                                    </div>
+                                    <div class="tracking-info">
+                                        <h5>Entregado</h5>
+                                        <p>Llegará a tu domicilio</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += html;
+                });
+
+                console.log('Pedidos cargados:', orders.length);
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                const container = document.getElementById('ordersContainer');
+                if (container) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px;">
+                            <i class="fas fa-exclamation-circle" style="font-size: 48px; color: #e74c3c; margin-bottom: 20px;"></i>
+                            <p style="color: #e74c3c;">Error al cargar los pedidos</p>
+                            <p style="color: #999; font-size: 14px; margin-top: 10px;">Intenta recargar la página</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function updateUserMenu(user) {
+            const dropdownName = document.getElementById('dropdownName');
+            const dropdownEmail = document.getElementById('dropdownEmail');
+            
+            if (dropdownName && user.user_metadata?.full_name) {
+                dropdownName.textContent = user.user_metadata.full_name;
+            }
+            if (dropdownEmail) {
+                dropdownEmail.textContent = user.email;
+            }
+        }
+
+        function setupEventListeners() {
+            const logoutLink = document.getElementById('logoutLink');
+            if (logoutLink) {
+                logoutLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    logout();
+                });
+            }
+        }
+
+        function setupUserMenuDropdown() {
+            const trigger = document.getElementById('userMenuTrigger');
+            const dropdown = document.getElementById('userMenuDropdown');
+
+            if (!trigger || !dropdown) return;
+
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('active');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.remove('active');
+                }
+            });
+        }
+
+        async function logout() {
+            try {
+                await supabase.auth.signOut();
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 500);
+            } catch (error) {
+                console.error('Error logging out:', error);
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', initPedidos);
+    </script>
+</body>
+</html>

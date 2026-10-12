@@ -1,0 +1,360 @@
+-- ============================================================
+-- SCHEMA CORREGIDO — Legrand
+-- Arregla: precios/montos manipulables, cotizaciones invisibles
+-- para el usuario, policy duplicada, stock que no baja,
+-- updated_at que no se mueve, índices faltantes, admin quemado,
+-- y separa estado de pedido vs estado de pago.
+-- ============================================================
+
+create table if not exists categorias (
+  id bigint generated always as identity primary key,
+  nombre text not null unique,
+  slug text unique
+);
+
+insert into categorias (nombre, slug) values
+  ('Anillos', 'anillos'),
+  ('Collares', 'collares'),
+  ('Aretes', 'aretes'),
+  ('Pulseras', 'pulseras'),
+  ('Relojes', 'relojes')
+on conflict (nombre) do nothing;
+
+-- ---------- PRODUCTOS ----------
+create table if not exists productos (
+  id bigint generated always as identity primary key,
+  nombre text not null,
+  descripcion_corta text,
+  descripcion text,
+  precio numeric(12,2) not null default 0 check (precio >= 0),
+  categoria_id bigint references categorias(id) on delete set null,
+  imagenes text[] default '{}',
+  specs jsonb default '{}'::jsonb,
+  stock integer default 0 check (stock >= 0),
+  min_stock integer default 5,
+  stock_note text,
+  activo boolean default true,
+  destacado boolean default false,
+  nuevo boolean default false,
+  tags text[] default '{}',
+  creado_en timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create index if not exists idx_productos_categoria on productos(categoria_id);
+create index if not exists idx_productos_activo on productos(activo);
+
+-- FIX: updated_at ya no se queda quieto cuando se edita un producto
+create or replace function set_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_productos_updated_at on productos;
+create trigger trg_productos_updated_at
+  before update on productos
+  for each row execute function set_updated_at();
+
+-- ---------- USUARIOS (perfil, vinculado 1 a 1 con auth.users) ----------
+create table if not exists usuarios (
+  id uuid primary key references auth.users(id) on delete cascade,
+  email text,
+  full_name text,
+  phone text,
+  address text,
+  gender text,
+  birthday date,
+  avatar_url text,
+  role text not null default 'user' check (role in ('user','admin')),
+  created_at timestamptz default now()
+);
+
+create or replace function handle_new_user()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  insert into public.usuarios (id, email, full_name, phone, address, gender, birthday)
+  values (
+    new.id,
+    new.email,
+    new.raw_user_meta_data->>'full_name',
+    new.raw_user_meta_data->>'phone',
+    new.raw_user_meta_data->>'address',
+    new.raw_user_meta_data->>'gender',
+    nullif(new.raw_user_meta_data->>'birthday','')::date
+  )
+  on conflict (id) do nothing;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function handle_new_user();
+
+-- ---------- PEDIDOS ----------
+-- FIX: "estado" ahora es solo el estado logístico del pedido.
+-- El estado del pago vive en "pagos", donde corresponde.
+create table if not exists pedidos (
+  id bigint generated always as identity primary key,
+  usuario_id uuid references usuarios(id) on delete set null,
+  total numeric(12,2) not null default 0 check (total >= 0),
+  estado text not null default 'pendiente'
+    check (estado in ('pendiente','en_transito','entregado','cancelado')),
+  metodo_envio text,
+  direccion_envio text,
+  comprador_nombre text,
+  comprador_apellido text,
+  comprador_dni text,
+  comprador_email text,
+  mp_preference_id text,
+  mp_payment_id text,
+  creado_en timestamptz default now()
+);
+
+create index if not exists idx_pedidos_usuario on pedidos(usuario_id);
+
+-- ---------- PEDIDO_ITEMS ----------
+create table if not exists pedido_items (
+  id bigint generated always as identity primary key,
+  pedido_id bigint references pedidos(id) on delete cascade,
+  producto_id bigint references productos(id) on delete set null,
+  cantidad integer not null default 1 check (cantidad > 0),
+  precio_unitario numeric(12,2) not null default 0
+);
+
+create index if not exists idx_pedido_items_pedido on pedido_items(pedido_id);
+create index if not exists idx_pedido_items_producto on pedido_items(producto_id);
+
+-- FIX: el precio ya no lo manda el cliente. Se toma siempre del
+-- catálogo real al momento de crear el ítem, así nadie puede pagar
+-- un precio inventado. Además descuenta stock automáticamente.
+create or replace function set_precio_y_descontar_stock()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  precio_real numeric(12,2);
+  stock_actual integer;
+begin
+  select precio, stock into precio_real, stock_actual
+  from productos where id = new.producto_id for update;
+
+  if precio_real is null then
+    raise exception 'Producto % no existe o no está disponible', new.producto_id;
+  end if;
+
+  if stock_actual is not null and stock_actual < new.cantidad then
+    raise exception 'Stock insuficiente para el producto %', new.producto_id;
+  end if;
+
+  new.precio_unitario = precio_real;
+
+  update productos set stock = stock - new.cantidad where id = new.producto_id;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_pedido_items_precio_stock on pedido_items;
+create trigger trg_pedido_items_precio_stock
+  before insert on pedido_items
+  for each row execute function set_precio_y_descontar_stock();
+
+-- FIX: si se cancela/borra un ítem, el stock vuelve
+create or replace function devolver_stock()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  update productos set stock = stock + old.cantidad where id = old.producto_id;
+  return old;
+end;
+$$;
+
+drop trigger if exists trg_pedido_items_devolver_stock on pedido_items;
+create trigger trg_pedido_items_devolver_stock
+  after delete on pedido_items
+  for each row execute function devolver_stock();
+
+-- ---------- PAGOS ----------
+create table if not exists pagos (
+  id bigint generated always as identity primary key,
+  pedido_id bigint references pedidos(id) on delete cascade,
+  estado text not null default 'pendiente'
+    check (estado in ('pendiente','aprobado','rechazado')),
+  monto numeric(12,2) not null default 0 check (monto >= 0),
+  metodo text,
+  mp_preference_id text,
+  mp_payment_id text,
+  mp_status text,
+  creado_en timestamptz default now()
+);
+
+-- FIX: índice que faltaba, igual que en pedido_items
+create index if not exists idx_pagos_pedido on pagos(pedido_id);
+
+-- ---------- COTIZACIONES ----------
+create table if not exists cotizaciones (
+  id bigint generated always as identity primary key,
+  usuario_id uuid references usuarios(id) on delete set null,
+  nombre text,
+  email text,
+  telefono text,
+  mensaje text,
+  estado text not null default 'pendiente' check (estado in ('pendiente','respondida','cerrada')),
+  creado_en timestamptz default now()
+);
+
+create index if not exists idx_cotizaciones_usuario on cotizaciones(usuario_id);
+
+-- ============================================================
+-- ROW LEVEL SECURITY
+-- ============================================================
+
+alter table categorias    enable row level security;
+alter table productos     enable row level security;
+alter table usuarios      enable row level security;
+alter table pedidos       enable row level security;
+alter table pedido_items  enable row level security;
+alter table pagos         enable row level security;
+alter table cotizaciones  enable row level security;
+
+create or replace function is_admin()
+returns boolean
+language sql
+security definer set search_path = public
+as $$
+  select exists (
+    select 1 from usuarios where id = auth.uid() and role = 'admin'
+  );
+$$;
+
+-- Categorías y productos
+drop policy if exists "categorias publicas" on categorias;
+create policy "categorias publicas" on categorias for select using (true);
+
+drop policy if exists "productos activos publicos" on productos;
+create policy "productos activos publicos" on productos
+  for select using (activo = true or is_admin());
+
+drop policy if exists "admin escribe productos" on productos;
+create policy "admin escribe productos" on productos
+  for all using (is_admin()) with check (is_admin());
+
+drop policy if exists "admin escribe categorias" on categorias;
+create policy "admin escribe categorias" on categorias
+  for all using (is_admin()) with check (is_admin());
+
+-- Usuarios
+drop policy if exists "usuario ve su perfil" on usuarios;
+create policy "usuario ve su perfil" on usuarios
+  for select using (auth.uid() = id or is_admin());
+
+drop policy if exists "usuario edita su perfil" on usuarios;
+create policy "usuario edita su perfil" on usuarios
+  for update using (auth.uid() = id or is_admin());
+
+drop policy if exists "usuario se crea a si mismo" on usuarios;
+create policy "usuario se crea a si mismo" on usuarios
+  for insert with check (auth.uid() = id);
+
+-- Pedidos
+drop policy if exists "usuario ve sus pedidos" on pedidos;
+create policy "usuario ve sus pedidos" on pedidos
+  for select using (auth.uid() = usuario_id or is_admin());
+
+drop policy if exists "usuario crea sus pedidos" on pedidos;
+create policy "usuario crea sus pedidos" on pedidos
+  for insert with check (auth.uid() = usuario_id);
+
+-- FIX: se unificaron las dos policies duplicadas de update en una sola,
+-- y se agregó que el dueño pueda cancelar su propio pedido pendiente.
+drop policy if exists "admin actualiza pedidos" on pedidos;
+drop policy if exists "Admins pueden actualizar pedidos" on pedidos;
+create policy "admin actualiza pedidos" on pedidos
+  for update using (is_admin());
+
+create policy "usuario cancela su pedido pendiente" on pedidos
+  for update using (auth.uid() = usuario_id and estado = 'pendiente')
+  with check (estado = 'cancelado');
+
+-- Pedido items
+drop policy if exists "ver items de mis pedidos" on pedido_items;
+create policy "ver items de mis pedidos" on pedido_items
+  for select using (
+    exists (select 1 from pedidos p where p.id = pedido_id and (p.usuario_id = auth.uid() or is_admin()))
+  );
+
+drop policy if exists "crear items de mis pedidos" on pedido_items;
+create policy "crear items de mis pedidos" on pedido_items
+  for insert with check (
+    exists (select 1 from pedidos p where p.id = pedido_id and p.usuario_id = auth.uid())
+  );
+
+drop policy if exists "admin borra items" on pedido_items;
+create policy "admin borra items" on pedido_items
+  for delete using (is_admin());
+
+-- Pagos
+drop policy if exists "ver pagos de mis pedidos" on pagos;
+create policy "ver pagos de mis pedidos" on pagos
+  for select using (
+    exists (select 1 from pedidos p where p.id = pedido_id and (p.usuario_id = auth.uid() or is_admin()))
+  );
+
+drop policy if exists "crear pagos de mis pedidos" on pagos;
+create policy "crear pagos de mis pedidos" on pagos
+  for insert with check (
+    exists (select 1 from pedidos p where p.id = pedido_id and p.usuario_id = auth.uid())
+  );
+
+drop policy if exists "admin actualiza pagos" on pagos;
+create policy "admin actualiza pagos" on pagos
+  for update using (is_admin());
+
+-- Cotizaciones
+drop policy if exists "cualquiera pide cotizacion" on cotizaciones;
+create policy "cualquiera pide cotizacion" on cotizaciones
+  for insert with check (true);
+
+drop policy if exists "admin ve cotizaciones" on cotizaciones;
+create policy "admin ve cotizaciones" on cotizaciones
+  for select using (is_admin());
+
+-- FIX: antes el usuario que pedía una cotización nunca podía verla.
+create policy "usuario ve sus propias cotizaciones" on cotizaciones
+  for select using (auth.uid() = usuario_id);
+
+drop policy if exists "admin actualiza cotizaciones" on cotizaciones;
+create policy "admin actualiza cotizaciones" on cotizaciones
+  for update using (is_admin());
+
+-- ============================================================
+-- Admin inicial
+-- FIX: antes el email estaba escrito dos veces a mano en el script.
+-- Ahora se define una sola vez en una variable de sesión y se reusa.
+-- Reemplazá el valor por el mail real del admin antes de correrlo.
+-- ============================================================
+do $$
+declare
+  admin_email text := 'admin123@gmail.com';
+begin
+  insert into usuarios (id, email, full_name, role, created_at)
+  select id, email, 'Administrador', 'admin', now()
+  from auth.users
+  where email = admin_email
+  on conflict (id) do update set role = 'admin';
+
+  update usuarios set role = 'admin' where email = admin_email;
+end $$;

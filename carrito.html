@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito - Legrand Joyas</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a class="logo" href="index.html">LEGRAND <span>JOYAS</span></a>
+        <div>
+            <a href="index.html">Inicio</a>
+            <a href="catalogo.html">Catálogo</a>
+
+            <!-- User Menu when not logged in -->
+            <div id="auth-buttons" class="auth-buttons" style="display:inline-flex; gap:1rem; align-items:center;">
+                <a href="registro.html">Crear cuenta</a>
+                <a href="login.html">Iniciar sesión</a>
+            </div>
+
+            <!-- User Menu when logged in -->
+            <div id="user-menu-bubble" class="user-menu-bubble" style="display: none;">
+                <button class="user-bubble-btn" id="userBubbleBtn">
+                    <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Perfil" class="profile-image" style="width: 36px; height: 36px; max-width: 36px; border-radius: 50%; object-fit: cover;">
+                </button>
+
+                <div class="user-bubble-dropdown" id="userBubbleDropdown">
+                    <div class="bubble-header">
+                        <img id="bubbleUserImage" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=50&h=50&fit=crop" alt="Usuario">
+                        <div class="bubble-user-info">
+                            <h4 id="bubbleUserName">Usuario</h4>
+                            <p id="bubbleUserEmail">usuario@email.com</p>
+                        </div>
+                    </div>
+
+                    <div class="bubble-menu">
+                        <a href="perfil.html" class="bubble-item">
+                            <i class="icon">👤</i> Mi Perfil
+                        </a>
+                        <a href="historial.html" class="bubble-item">
+                            <i class="icon">📦</i> Historial de Compras
+                        </a>
+                        <a href="pedidos.html" class="bubble-item">
+                            <i class="icon">🚚</i> Mis Pedidos
+                        </a>
+                        <a href="perfil.html#privacidad" class="bubble-item">
+                            <i class="icon">🔒</i> Seguridad
+                        </a>
+                        <a href="admin/gestion-stock.html" class="bubble-item" id="adminLink" style="display: none;">
+                            <i class="icon">⚙️</i> Administración
+                        </a>
+                        <hr>
+                        <button id="logoutBubbleBtn" class="bubble-item logout">
+                            <i class="icon">🚪</i> Cerrar Sesión
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section>
+        <div class="page-content cart-container">
+            <div>
+                <h1>Tu carrito de compras</h1>
+                <p>Revisa tus joyas seleccionadas y avanza hacia la compra segura.</p>
+                <div id="cart-items" style="margin-top:2rem;"></div>
+            </div>
+            <aside class="summary">
+                <h2>Resumen del pedido</h2>
+                <div style="margin:2rem 0; display:grid; gap:1rem;">
+                    <div style="display:flex; justify-content:space-between;"><span>Subtotal</span><strong>$<span id="subtotal">0.00</span></strong></div>
+                    <div style="display:flex; justify-content:space-between;"><span>Envío</span><strong>Gratis</strong></div>
+                </div>
+                <p id="discount-text" style="display:none; color:var(--gold); font-weight:700; margin-bottom:1rem;"></p>
+                <hr>
+                <h3>Total: $<span id="total">0.00</span></h3>
+                <div id="payment-options" style="margin:2rem 0;"></div>
+                <button class="btn btn-primary" onclick="checkoutCart()">Finalizar compra</button>
+                <p style="margin-top:1rem; color:var(--muted);">Elige transferencia o efectivo para obtener 30% de descuento. Luego recibirás instrucciones por WhatsApp.</p>
+            </aside>
+        </div>
+    </section>
+
+    <!-- Modal de datos del comprador -->
+    <div id="checkout-modal" class="checkout-modal-overlay" style="display:none;">
+        <div class="checkout-modal">
+            <h2>Tus datos para la compra</h2>
+            <p style="color:var(--muted); margin-bottom:1.5rem;">Los necesitamos para generar tu pedido y, si pagás con Mercado Pago, para identificarte ante la plataforma de pago.</p>
+            <form id="checkout-form">
+                <div class="checkout-form-grid">
+                    <input type="text" id="chk-nombre" placeholder="Nombre" required>
+                    <input type="text" id="chk-apellido" placeholder="Apellido" required>
+                    <input type="text" id="chk-dni" placeholder="DNI" inputmode="numeric" required>
+                    <input type="email" id="chk-email" placeholder="Correo (Gmail)" required>
+                    <textarea id="chk-direccion" placeholder="Dirección completa de envío" required class="checkout-form-full"></textarea>
+                </div>
+                <div id="checkout-form-error" style="color:#b3261e; display:none; margin:0.75rem 0;"></div>
+                <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeCheckoutModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="checkout-submit-btn">Continuar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        .checkout-modal-overlay {
+            position: fixed; inset: 0; background: rgba(28,19,13,0.45);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000; padding: 1rem;
+        }
+        .checkout-modal {
+            background: var(--surface); border-radius: 24px; padding: 2rem;
+            max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto;
+        }
+        .checkout-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .checkout-form-grid .checkout-form-full { grid-column: 1 / -1; }
+        .checkout-modal input, .checkout-modal textarea {
+            padding: 0.75rem 1rem; border-radius: 16px; border: 1px solid var(--border);
+            font-family: inherit; width: 100%; box-sizing: border-box;
+        }
+        .checkout-modal textarea { min-height: 80px; }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/cart.js"></script>
+</body>
+</html>
